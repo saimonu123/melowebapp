@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: melomysql
+  labels:
+    app: webapp
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: webapp
+    tier: mysql
+  clusterIP: None
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pv-claim
+  labels:
+    app: webapp
+
+
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: melo-mysql
+  labels:
+    app: melo
+spec:
+  selector:
+    matchLabels:
+      app: webapp
+      tier: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: webapp
+        tier: mysql
+    spec:
+      containers:
+      - image: saimohan3604/melo_db_mysql
+        name: melomysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-pass
+              key: password
+        ports:
+        - containerPort: 3306
+          name: melomysql
+        volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-persistent-storage
+        persistentVolumeClaim:
+          claimName: mysql-pv-claim
