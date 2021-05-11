@@ -1,39 +1,45 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app1-nginx-deployment
+  name: melo
   labels:
-    app: app1-nginx
+    app: web
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: app1-nginx
+      app: web-app
   template:
     metadata:
       labels:
-        app: app1-nginx
+        app: web-app
     spec:
       containers:
-        - name: app1-nginx
-          image: meloapp.azurecr.io/melo_webapp_nginx
+        - name: melo-webapp
+          image: nginx
           ports:
-            - containerPort: 9000
+            - containerPort: 80
+        - name: webmelo
+          image: saimohan3604/melo_webapp_nginx
+          ports:
+            - containerPort: 80
+
+---
+
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: app1-nginx-loadbalancer-service
+  name: web-svc
   labels:
-    app: app1-nginx
+    app: web
 spec:
   type: LoadBalancer
   selector:
-    app: app1-nginx
+    app: web
   ports:
     - port: 80
       targetPort: 80
-
-
 
 
